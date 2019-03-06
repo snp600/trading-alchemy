@@ -19,7 +19,7 @@ print(cor.test(y_ma, x_ma)$estimate)
 get_path <- function(filename){
   PATH <- getwd()
   PATH <- substring(PATH, 1, nchar(PATH) - 2)
-  PATH <- paste(PATH,"/binance_data/",filename, sep="")
+  PATH <- paste(PATH,"/data/",filename, sep="")
   return(PATH)
 }
 
