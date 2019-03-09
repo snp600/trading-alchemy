@@ -1,0 +1,6 @@
+#editorconfig.org
+root = true
+
+[*.lsp]
+indent_style = tab
+indent_size = 4
