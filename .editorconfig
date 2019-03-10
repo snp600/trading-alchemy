@@ -1,6 +1,6 @@
 #editorconfig.org
 root = true
 
-[*.lsp]
+[*.py]
 indent_style = tab
 indent_size = 4
