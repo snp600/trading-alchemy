@@ -23,24 +23,14 @@ class MovingAverage:
 		balance[0] = start_balance
 		hold_btc  = 0
 
-		for i in range(1, len(open_prices)):
-			#waiting to buy btc
-			if (ma_fast[i] > ma_slow[i] and ma_fast[i-1] < ma_slow[i-1]):
-				hold_btc = balance[i-1] / open_prices[i] * (1.0 - fee/100.0)
+		for i in range(1, len(open_prices)):  
+			if hold_btc == 0:
+				if (ma_fast[i] > ma_slow[i] and ma_fast[i-1] < ma_slow[i-1]): #buy btc
+					hold_btc = balance[i-1] / open_prices[i] * (1.0 - fee/100.0)
 				balance[i] = balance[i-1]
-				offset = i
-				break
-			balance[i] = balance[i-1]
-
-		for i in range(offset, len(open_prices)):  
-			if (ma_fast[i] > ma_slow[i] and ma_fast[i-1] < ma_slow[i-1]): #buy btc
-				hold_btc = balance[i-1] / open_prices[i] * (1.0 - fee/100.0)
-				balance[i] = balance[i-1]
-			elif (ma_fast[i] < ma_slow[i] and ma_fast[i-1] > ma_slow[i-1]): #sell btc
-				balance[i] = hold_btc * open_prices[i] * (1.0 - fee/100.0)
-				hold_btc = 0
-			elif hold_btc != 0:
-				balance[i] = hold_btc * open_prices[i] * (1.0 - fee/100.0)
 			else:
-				balance[i] = balance[i-1]
+				balance[i] = hold_btc * open_prices[i] * (1.0 - fee/100.0)
+				if (ma_fast[i] < ma_slow[i] and ma_fast[i-1] > ma_slow[i-1]): #sell btc
+					hold_btc = 0
+				
 		return balance
