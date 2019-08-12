@@ -48,15 +48,15 @@ class SingleInstrumentBacktest:
 	wait = 0 #no action for "10" (e.g.) periods after stoploss/takeprofit
 	use_custom_signal = None
 	
-	
-	def __init__(self, df, initial_balance=100, fee=0.1, stoploss=0.03, takeprofit=0.05):
+	#stoploss and takeprofit = 100 means that we trade without stoploss/takeprofit
+	def __init__(self, df, initial_balance=100, fee=0.1, stoploss=100, takeprofit=100):
 		self.df = df.copy()
 		self.price = self.df['open'].values
 		self.periods = df.shape[0]
 		self.df.index = pd.RangeIndex(self.periods) #refresh index
 		self.balance = np.zeros(self.periods)
 		self.balance[0] = initial_balance
-		self.fee = fee
+		self.fee = fee #maker and taker transaction cost
 		self.stoploss = stoploss
 		self.takeprofit = takeprofit
 		self.add_indicator_marks()
@@ -114,9 +114,15 @@ class SingleInstrumentBacktest:
 		return self.balance
 	
 	
-	def show_balance(self):
+	def show_performance(self, show_benchmark=False):
 		plt.plot(range(self.periods), self.balance)
-		
+		if show_benchmark == True:
+			plt.plot(range(self.periods), self.df['open'].values / self.df['open'][0] * 100)
+		plt.ylabel('balance')
+		plt.xlabel('time period')
+		plt.legend(('strategy', 'benchmark (buy & hold)'), shadow=True)
+		plt.show()
+
 		
 	def get_metrics(self, digits=3):
 		risk_free_return = 0
