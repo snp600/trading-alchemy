@@ -61,7 +61,7 @@ class SingleInstrumentBacktest:
 		self.takeprofit = takeprofit
 		self.add_indicator_marks()
 		
-		
+	#add buy/sell signals to dataframe according to indicator marks	
 	def add_indicator_marks(self):
 		im = IndicatorMarks()
 		self.df['macd'] = talib.EMA(self.price, timeperiod=13) - talib.EMA(self.price, timeperiod=26)
@@ -83,16 +83,16 @@ class SingleInstrumentBacktest:
 		#if (self.df['rsi_14_mark'][self.i] == 'sell'):
 		if (self.df['custom_signal'][self.i] == 'sell'):
 			return True
-		#stoploss/takeprofit
+		#stoploss/takeprofit sell conditions ->
 		current_trade_loss = 1.0 - self.balance[self.i] / self.balance_on_buy
 		if (current_trade_loss >= self.stoploss or -1.0 * current_trade_loss >= self.takeprofit):
 			self.wait = 8
 			return True
 		return False
 	
-	
+	#step for one period
 	def step(self):
-		if self.hold == 0:
+		if self.hold == 0: #no instrument on balance -- only usd
 			if (self.buy_condition() == True):
 				self.hold = self.balance[self.i-1] / self.price[self.i] * (1.0 - self.fee/100.0)
 				self.balance_on_buy = self.balance[self.i-1]
@@ -102,7 +102,7 @@ class SingleInstrumentBacktest:
 			if (self.sell_condition() == True):
 				self.hold = 0
 		
-		
+	#runs backtest through all the periods	
 	def full_backtest(self, print_metrics=True, show_balance=True):
 		for _ in range(1, self.periods):
 			self.i += 1
@@ -114,6 +114,7 @@ class SingleInstrumentBacktest:
 		return self.balance
 	
 	
+	#plots balance/timeperiod
 	def show_performance(self, show_benchmark=False):
 		plt.plot(range(self.periods), self.balance)
 		if show_benchmark == True:
@@ -123,7 +124,7 @@ class SingleInstrumentBacktest:
 		plt.legend(('strategy', 'benchmark (buy & hold)'), shadow=True)
 		plt.show()
 
-		
+	#performance metrics	
 	def get_metrics(self, digits=3):
 		risk_free_return = 0
 		self.df['return'] = self.balance / self.balance[0]
@@ -131,7 +132,6 @@ class SingleInstrumentBacktest:
 		self.df['return'] = self.df['return'].pct_change(1)
 		sharpe = (self.df['return'].mean() - risk_free_return) / self.df['return'].std()
 		sharpe *= self.periods ** 0.5 #annualize
-		#sharpe = np.mean(ret) / np.std(ret)
 		return {"profit factor" : round(self.balance[self.periods-1]/self.balance[0], digits), 
 				"sharpe ratio" : round(sharpe, digits),
 				"max drawdown" : str(round(max_drawdown * 100, digits-2)) + "%"}
